@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI安全防御系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:#080502;color:#fff;min-height:100vh}
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.nav{position:relative;z-index:10;text-align:center;background:rgba(0,0,0,0.5);padding:1rem;border-bottom:1px solid rgba(255,215,0,0.2)}
+.nav a{color:#FFD700;margin:0 12px;text-decoration:none;font-weight:bold}
+header{position:relative;z-index:1;padding:3rem 2rem;text-align:center;background:linear-gradient(135deg,rgba(255,80,0,0.1),rgba(255,215,0,0.1));border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(10px)}
+header h1{font-size:2.4rem;background:linear-gradient(90deg,#FF5000,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.container{max-width:1000px;margin:3rem auto;padding:0 2rem;position:relative;z-index:1}
+.box{background:rgba(26,15,5,0.8);border:1px solid rgba(255,215,0,0.3);border-radius:16px;padding:2rem;margin-bottom:2rem;backdrop-filter:blur(10px)}
+.box h2{color:#FFD700;margin-bottom:1rem}
+footer{text-align:center;padding:2rem;color:#998866;position:relative;z-index:1;border-top:1px solid rgba(255,215,0,0.1)}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="nav">
+  <a href="index.html">首页</a>
+  <a href="safe.html">安全防御</a>
+  <a href="data.html">数据分析</a>
+  <a href="about.html">关于本站</a>
+</div>
+<header>
+  <h1>AI 安全防御系统</h1>
+</header>
+<div class="container">
+  <div class="box">
+    <h2>系统介绍</h2>
+    <p>基于深度学习的智能威胁检测引擎，可实时识别、拦截、处理AI病毒、恶意代码与网络攻击。</p>
+  </div>
+  <div class="box">
+    <h2>核心能力</h2>
+    <p>实时监控、威胁分析、自动拦截、日志记录、可视化大屏、多端同步防护。</p>
+  </div>
+</div>
+<footer>© 2026 AI科技展示平台</footer>
+<script>
+const canvas=document.getElementById('particles');const ctx=canvas.getContext('2d');function rs(){canvas.width=innerWidth;canvas.height=innerHeight}rs();window.addEventListener('resize',rs);class P{constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.s=Math.random()*2+1;this.vx=Math.random()*0.4-0.2;this.vy=Math.random()*0.4-0.2}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>canvas.width)this.vx*=-1;if(this.y<0||this.y>canvas.height)this.vy*=-1}draw(){ctx.fillStyle=`rgba(255,${180+Math.random()*40},${50+Math.random()*70},0.7)`;ctx.beginPath();ctx.arc(this.x,this.y,this.s,0,Math.PI*2);ctx.fill()}}const arr=[];for(let i=0;i<120;i++)arr.push(new P());function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);arr.forEach(p=>{p.update();p.draw()});requestAnimationFrame(anim)}anim();
+</script>
+</body>
+</html>
