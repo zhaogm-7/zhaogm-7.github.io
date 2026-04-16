@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 科技展示平台</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: #080502;
+  color: #fff;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+#particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+header {
+  position: relative;
+  z-index: 1;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255,80,0,0.1), rgba(255,215,0,0.1));
+  border-bottom: 1px solid rgba(255,215,0,0.2);
+  backdrop-filter: blur(10px);
+}
+
+header h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, #FF5000, #FFD700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.3); }
+}
+
+header p {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  letter-spacing: 0.2rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.card {
+  background: rgba(26, 15, 5, 0.8);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+  transition: 0.5s;
+}
+
+.card:hover::before {
+  left: 100%;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(255,215,0,0.2);
+  border-color: #FFD700;
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #FFD700;
+}
+
+.card p {
+  color: #d1c8b8;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+.about-section {
+  background: rgba(26, 15, 5, 0.8);
+  border: 1px solid rgba(255,80,0,0.3);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  backdrop-filter: blur(10px);
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.about-section h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #FF5000, #FFD700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-section p {
+  color: #cbd5e1;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #998866;
+  background: rgba(10,5,2,0.8);
+  border-top: 1px solid rgba(255,215,0,0.1);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 2rem;
+  }
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<header>
+  <h1>AI 科技展示平台</h1>
+  <p>智能 · 安全 · 未来 · 创新</p>
+</header>
+
+<div class="container">
+  <div class="card-grid">
+    <div class="card">
+      <h3>AI 安全防御系统</h3>
+      <p>基于深度学习的智能威胁检测，实时拦截AI病毒、恶意代码，构建全方位数字安全屏障，守护系统与数据安全。</p>
+    </div>
+    <div class="card">
+      <h3>智能数据分析引擎</h3>
+      <p>AI驱动的海量数据处理系统，秒级提取关键信息，可视化分析结果，为决策提供精准数据支撑，效率提升100倍。</p>
+    </div>
+    <div class="card">
+      <h3>前沿技术展示中心</h3>
+      <p>聚焦AI大模型、网络安全、前端开发等前沿技术，打造专业技术展示平台，分享最新技术成果与行业趋势。</p>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>关于本站</h2>
+    <p>这是一个纯前端科技风展示网站，采用现代化设计与动态交互效果，适配电脑、手机、平板全设备，可直接公开访问，用于个人作品展示、技术演示、项目介绍，代码干净无恶意内容，可自由修改与二次开发。</p>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AI 科技展示平台 · 仅供学习与展示使用</p>
+</footer>
+
+<script>
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let mouse = { x: null, y: null };
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 3 + 1;
+    this.speedX = Math.random() * 0.5 - 0.25;
+    this.speedY = Math.random() * 0.5 - 0.25;
+    this.color = `rgba(${255}, ${Math.floor(180+Math.random()*50)}, ${Math.floor(50+Math.random()*80)}, ${0.6+Math.random()*0.4})`;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    const dx = mouse.x - this.x;
+    const dy = mouse.y - this.y;
+    const distance = Math.sqrt(dx*dx + dy*dy);
+    if (distance < 150) {
+      const force = (150 - distance) / 150;
+      this.x -= dx * force * 0.05;
+      this.y -= dy * force * 0.05;
+    }
+  }
+  draw() {
+    ctx.
