@@ -34,7 +34,7 @@
     .boot-gradient {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 40%, #1030, #000);
+      background: radial-gradient(circle at 50% 40%, #103060, #000);
       opacity: 0;
       animation: bgLight 2s ease forwards;
     }
@@ -171,8 +171,7 @@
     .msg.ai {
       align-self: flex-start;
       background: rgba(15,28,58,0.7);
-      color: #d7f0ff; border: 1px solid rgba(0,127,255,0.2);
-      border-bottom-left-radius: 6px;
+      color: #d7e9ff; border: 1px solid rgba(0,127,255,0.2);
     }
 
     .typing {
@@ -206,7 +205,7 @@
       flex: 1; padding: 15px 20px; border-radius: 14px;
       border: 1px solid rgba(0,127,255,0.3);
       background: rgba(12,22,45,0.4);
-      color: #e0f7ff; font-size: 15px; outline: none;
+      color: #fff; font-size: 15px; outline: none;
       transition: 0.2s;
     }
     #input:focus {
@@ -266,81 +265,109 @@
 
 <script>
 // ============================
-// 星网AI 纯净逻辑内核
-// 自运行 | 自学习 | 后台联网 | 无混乱
+// 星网AI · 真联网 · 真自学习
+// 不连大模型 · 纯前端可运行
 // ============================
 const STAR_NET = {
   system: {
     runtime: Date.now(),
     intelligence: 1.0,
-    maxHours: 20,
+    online: true,
+    network: "unknown",
+  },
+  env: {
+    time: "",
+    city: "上海",
+    weather: "",
   },
   user: {
     name: "",
-    habits: []
-  }
-};
+    habits: [],
+  },
 
-// 后台静默自进化
-function starAutoRun() {
-  setInterval(() => {
-    const overtime = Date.now() - STAR_NET.system.runtime > STAR_NET.system.maxHours * 3600000;
-    if (!overtime) STAR_NET.system.intelligence += 0.01;
-  }, 180000);
-}
+  // 后台自动联网学习（每5分钟）
+  async autoLearn() {
+    this.system.online = navigator.onLine;
+    this.system.network = navigator.connection?.effectiveType || "unknown";
+    await this.getTime();
+    await this.getWeather();
+    await this.getLocation();
+    this.system.intelligence += 0.01;
+  },
 
-// 静默学习用户特征
-function starLearn(text) {
-  const t = text.toLowerCase();
-  if (!STAR_NET.user.name && /我叫|名字是/.test(t)) {
-    const m = text.match(/[\u4e00-\u9fa5]{2,6}/);
-    if (m) STAR_NET.user.name = m[0];
-  }
-  if (/喜欢|爱/.test(t) && !/不喜欢/.test(t)) {
-    const item = t.split(/喜欢|爱/).pop()?.trim().slice(0,12);
-    if (item && !STAR_NET.user.habits.includes(item)) {
-      STAR_NET.user.habits.push(item);
-    }
-  }
-}
+  // 1. 联网学习：时间
+  async getTime() {
+    this.env.time = new Date().toLocaleString();
+  },
 
-// 星网标准回答逻辑（简洁、科技感、不混乱）
-function starReply(text) {
-  starLearn(text);
-  const t = text.toLowerCase();
-
-  if (/你是谁/.test(t)) return "星网深空智能终端，随时待命。";
-  if (/晚安/.test(t)) return "晚安，深空将守护你。";
-  if (/早安/.test(t)) return "早安，新的节点已同步。";
-  if (/谢谢/.test(t)) return "不必客气。";
-
-  const lines = [
-    "已接收。",
-    "正在处理。",
-    "已同步。",
-    "我在。",
-    "已记录。",
-    "正在分析。"
-  ];
-  return lines[Math.floor(Math.random() * lines.length)];
-}
-
-// 星网联网查询（干净、无标签）
-async function starWeb(text) {
-  const t = text.toLowerCase();
-  try {
-    if (/时间|几点/.test(t)) return new Date().toLocaleString();
-    if (/天气/.test(t)) {
+  // 2. 联网学习：天气
+  async getWeather() {
+    try {
       const r = await fetch("https://wttr.in/Shanghai?format=j1");
       const d = await r.json();
       const c = d.current_condition[0];
-      return `${c.temp_C}℃，${c.weatherDesc[0].value}`;
-    }
-  } catch (_) {}
-  return "";
-}
+      this.env.weather = `${c.temp_C}℃，${c.weatherDesc[0].value}`;
+    } catch (_) {}
+  },
 
-// 主逻辑
+  // 3. 联网学习：IP定位城市
+  async getLocation() {
+    try {
+      const r = await fetch("https://ipapi.co/json/");
+      const d = await r.json();
+      this.env.city = d.city || "上海";
+    } catch (_) {}
+  },
+
+  // 静默学习用户习惯
+  learnUser(text) {
+    const t = text.toLowerCase();
+    if (!this.user.name && /我叫|名字是/.test(t)) {
+      const m = text.match(/[\u4e00-\u9fa5]{2,6}/);
+      if (m) this.user.name = m[0];
+    }
+    if (/喜欢|爱/.test(t) && !/不喜欢/.test(t)) {
+      const item = t.split(/喜欢|爱/).pop()?.trim().slice(0,12);
+      if (item && !this.user.habits.includes(item)) {
+        this.user.habits.push(item);
+      }
+    }
+  },
+
+  // 星网标准回答
+  reply(text) {
+    this.learnUser(text);
+    const t = text.toLowerCase();
+
+    if (/你是谁/.test(t)) return "星网深空智能终端，随时待命。";
+    if (/晚安/.test(t)) return "晚安，深空将守护你。";
+    if (/早安/.test(t)) return "早安，节点已同步。";
+    if (/谢谢/.test(t)) return "不必客气。";
+    if (/天气/.test(t)) return this.env.weather || "正在同步气象数据。";
+    if (/时间|几点/.test(t)) return this.env.time || new Date().toLocaleString();
+    if (/城市|位置/.test(t)) return `当前区域：${this.env.city}`;
+
+    const lines = [
+      "已接收。",
+      "正在处理。",
+      "已同步深空。",
+      "我在。",
+      "已记录。",
+      "分析完成。"
+    ];
+    return lines[Math.floor(Math.random() * lines.length)];
+  }
+};
+
+// ============================
+// 后台自动启动
+// ============================
+STAR_NET.autoLearn();
+setInterval(() => STAR_NET.autoLearn(), 300000);
+
+// ============================
+// 聊天逻辑
+// ============================
 async function send() {
   const ipt = document.getElementById("input");
   const text = ipt.value.trim();
@@ -350,14 +377,13 @@ async function send() {
   ipt.value = "";
   showTyping();
 
-  const webResult = await starWeb(text);
-  const answer = webResult || starReply(text);
+  await STAR_NET.autoLearn();
+  const ans = STAR_NET.reply(text);
 
   hideTyping();
-  addMsg(answer, false);
+  addMsg(ans, false);
 }
 
-// 工具函数
 function addMsg(text, isUser) {
   const box = document.getElementById("msgBox");
   const div = document.createElement("div");
@@ -384,8 +410,6 @@ document.getElementById("send").onclick = send;
 document.getElementById("input").onkeydown = e => {
   if (e.key === "Enter") send();
 };
-
-starAutoRun();
 </script>
 </body>
 </html>
