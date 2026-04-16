@@ -2,25 +2,67 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>星网AI · 智能语音助手 (升级版)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>星网AI · 大模型版</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}
-    body{background:#0d1117;color:#e2e8f0;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
-    .chat{width:100%;max-width:800px;height:95vh;background:#161b22;border-radius:24px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #30363d;box-shadow:0 0 30px rgba(88,166,255,0.15)}
-    .header{padding:18px 20px;background:#0d1117;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:12px}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+    body{height:100vh;overflow:hidden;background:#050818;position:relative}
+    .bg-gradient{
+      position:fixed;top:0;left:0;right:0;bottom:0;
+      background:radial-gradient(circle at 50% 50%, #101a36, #050818);
+      z-index:-3;
+    }
+    .stars{
+      position:fixed;top:0;left:0;right:0;bottom:0;
+      background-image:
+        radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 60px 70px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 50px 50px, #89b4ff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 140px 130px, #9ecaff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 180px 180px, #fff, rgba(0,0,0,0));
+      background-size:200px 200px;
+      animation:bgMove 10s linear infinite;
+      z-index:-2;
+      opacity:0.6;
+    }
+    @keyframes bgMove{0%{transform:translateY(0)}100%{transform:translateY(-200px)}}
+    .tech-line{
+      position:fixed;left:10%;right:10%;height:1px;
+      background:linear-gradient(90deg,transparent,#58a6ff,transparent);
+      z-index:-1;opacity:0.3;
+    }
+    .line1{top:20%;animation:glow 4s infinite}
+    .line2{top:80%;animation:glow 5s infinite reverse}
+    @keyframes glow{0%,100%{opacity:0.2}50%{opacity:0.5}}
+    .chat{
+      width:100%;max-width:800px;height:95vh;
+      background:rgba(22,28,40,0.85);
+      backdrop-filter:blur(10px);
+      border-radius:24px;
+      display:flex;flex-direction:column;
+      overflow:hidden;
+      border:1px solid rgba(88,166,255,0.2);
+      box-shadow:0 0 40px rgba(88,166,255,0.15);
+      position:relative;z-index:10;margin:0 auto;
+    }
+    .header{padding:18px 20px;background:rgba(13,17,31,0.9);border-bottom:1px solid rgba(88,166,255,0.15);display:flex;align-items:center;gap:12px}
     .moon-icon{width:24px;height:24px;color:#58a6ff;display:flex;align-items:center;justify-content:center}
     .header h1{font-size:18px;font-weight:600;color:white}
     .badge{background:#238636;color:white;padding:4px 10px;border-radius:40px;font-size:12px}
-    .msg-box{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:#0d1117}
+    .msg-box{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:transparent}
     .msg{max-width:80%;padding:12px 16px;border-radius:16px;line-height:1.5;opacity:0;transform:translateY(6px);animation:msgIn 0.25s forwards}
     @keyframes msgIn{to{opacity:1;transform:translateY(0)}}
     .user{align-self:flex-end;background:#58a6ff;color:white}
-    .ai{align-self:flex-start;background:#21262d;color:#e2e8f0}
+    .ai{align-self:flex-start;background:rgba(33,40,56,0.9);color:#e2e8f0}
+    .typing{display:flex;gap:5px;padding:8px 14px;color:#aaa;font-size:14px;align-self:flex-start}
+    .dot{width:6px;height:6px;border-radius:50%;background:#58a6ff;animation:jump 1.2s infinite}
+    .dot:nth-child(2){animation-delay:0.2s}
+    .dot:nth-child(3){animation-delay:0.4s}
+    @keyframes jump{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
     .voice-wrapper{position:relative;width:50px;height:50px;display:flex;align-items:center;justify-content:center}
-    .voice-btn{width:50px;height:50px;border-radius:50%;background:#21262d;color:#58a6ff;border:none;font-size:18px;cursor:pointer;z-index:2;transition:all 0.2s}
-    .voice-btn:hover{background:#30363d}
+    .voice-btn{width:50px;height:50px;border-radius:50%;background:rgba(33,40,56,0.9);color:#58a6ff;border:none;font-size:18px;cursor:pointer;z-index:2;transition:all 0.2s}
+    .voice-btn:hover{background:rgba(50,60,80,0.9)}
     .voice-btn.active{color:white;background:#0969da}
     .wave{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:2px;width:32px;height:22px;z-index:1}
     .wave span{width:3px;background:#58a6ff;border-radius:2px;opacity:0}
@@ -31,23 +73,28 @@
     .wave span:nth-child(4){animation-delay:0.3s}
     .wave span:nth-child(5){animation-delay:0.4s}
     @keyframes wave{0%{height:4px;opacity:0.3}100%{height:22px;opacity:1}}
-    .input-area{display:flex;padding:14px;gap:10px;border-top:1px solid #30363d}
-    #input{flex:1;padding:14px 16px;border-radius:16px;border:none;background:#21262d;color:white;outline:none;font-size:15px}
-    #input:focus{background:#30363d}
+    .input-area{display:flex;padding:14px;gap:10px;border-top:1px solid rgba(88,166,255,0.15);background:rgba(13,17,31,0.9)}
+    #input{flex:1;padding:14px 16px;border-radius:16px;border:none;background:rgba(33,40,56,0.9);color:white;outline:none;font-size:15px}
+    #input:focus{background:rgba(50,60,80,0.9)}
     #send{padding:14px 20px;border-radius:16px;background:#58a6ff;color:white;border:none;font-weight:500;cursor:pointer;transition:background 0.2s}
     #send:hover{background:#3399ff}
     #send:active{background:#0969da}
     .msg-box::-webkit-scrollbar{width:6px}
-    .msg-box::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
-    .msg-box::-webkit-scrollbar-track{background:#161b22}
+    .msg-box::-webkit-scrollbar-thumb{background:rgba(88,166,255,0.3);border-radius:3px}
+    .msg-box::-webkit-scrollbar-track{background:transparent}
   </style>
 </head>
 <body>
+<div class="bg-gradient"></div>
+<div class="stars"></div>
+<div class="tech-line line1"></div>
+<div class="tech-line line2"></div>
+
 <div class="chat">
   <div class="header">
     <div class="moon-icon"><i class="fas fa-moon"></i></div>
-    <h1>星网AI · 语音版 (进化级)</h1>
-    <span class="badge">深度学习 v2.0</span>
+    <h1>星网AI</h1>
+    <span class="badge">深度记忆 v3.2 · 大模型版</span>
   </div>
   <div class="msg-box" id="msgBox"></div>
   <div class="input-area">
@@ -59,297 +106,282 @@
     <button id="send">发送</button>
   </div>
 </div>
+
 <script>
 (function(){
   "use strict";
+
+  // ===================== 大模型配置（你只需要改这里）=====================
+  const MODEL_CONFIG = {
+    endpoint: "",          // 你的接口地址，例如 https://api.deepseek.com/v1/chat/completions
+    apiKey: "",            // 你的 API Key
+    modelName: "deepseek-chat", // 模型名
+    systemPrompt: "你是星网AI，可爱、简短、温柔，像8岁小伙伴，用emoji和～语气。"
+  };
+  // ====================================================================
+
   const msgBox = document.getElementById('msgBox');
   const input = document.getElementById('input');
   const send = document.getElementById('send');
   const voiceBtn = document.getElementById('voice-btn');
 
-  // ---------- 状态管理 ----------
   let isReplying = false;
   let isSpeaking = false;
   let silentTimer = null;
-  const SILENT_TIMEOUT = 12000;  // 12秒沉默触发主动搭话
+  const SILENT_TIMEOUT = 11000;
 
-  // 升级后的记忆系统
+  let activeTyping = { cancel: () => {} };
+  let typingIndicator = null;
+
   let memory = {
-    name: '',
-    history: [],           // 对话历史（最多20条）
-    context: {             // 上下文状态
-      lastTopic: '',       // 上一轮话题
-      emotion: 'neutral',  // 感知到的用户情绪
-      userLikes: [],       // 用户提及的喜好
-    },
-    upgradeLevel: 1
+    name: "",
+    history: [],   // 元素格式：{ role: 'user'/'assistant', content: '...' }
+    likes: [],
+    level: 1
   };
 
-  try {
-    const saved = localStorage.getItem('starAI_memory_v2');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      memory.name = parsed.name || '';
-      memory.context.userLikes = parsed.userLikes || [];
-      memory.upgradeLevel = parsed.upgradeLevel || 1;
-    }
-  } catch(e) {}
-
-  // 持久化记忆
-  function saveMemory() {
-    try {
-      localStorage.setItem('starAI_memory_v2', JSON.stringify({
-        name: memory.name,
-        userLikes: memory.context.userLikes,
-        upgradeLevel: memory.upgradeLevel
-      }));
-    } catch(e) {}
+  // ---------- 本地存储 ----------
+  function loadMemory(){
+    try{
+      const d = localStorage.getItem('starAI_v3');
+      if(d) Object.assign(memory, JSON.parse(d));
+    }catch(e){}
   }
+
+  function saveMemory(){
+    try{
+      localStorage.setItem('starAI_v3', JSON.stringify({
+        name: memory.name,
+        likes: memory.likes,
+        level: memory.level,
+        history: memory.history.slice(-20)  // 保留最近20条对话
+      }));
+    }catch(e){}
+  }
+
+  loadMemory();
 
   // ---------- 语音识别 ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
   let isRecording = false;
-  if (SR) {
+
+  if(SR){
     rec = new SR();
     rec.lang = 'zh-CN';
     rec.continuous = false;
     rec.interimResults = false;
     rec.onstart = () => { isRecording = true; voiceBtn.classList.add('active'); };
     rec.onend = () => { isRecording = false; voiceBtn.classList.remove('active'); };
-    rec.onerror = () => { isRecording = false; voiceBtn.classList.remove('active'); };
+    rec.onerror = (e) => {
+      isRecording = false;
+      voiceBtn.classList.remove('active');
+      let msg = '语音识别出错';
+      if(e.error === 'not-allowed') msg = '请允许麦克风权限';
+      else if(e.error === 'no-speech') msg = '没有检测到声音';
+      alert(msg);
+    };
     rec.onresult = e => {
       const t = e.results[0][0]?.transcript;
-      if (t) {
-        input.value = t;
-        input.focus();
-      }
+      if(t) input.value = t;
     };
   }
 
-  function toggleVoice() {
-    if (!rec) return alert('浏览器不支持语音识别');
-    try { isRecording ? rec.stop() : rec.start(); } catch {}
+  function toggleVoice(){
+    if(!rec) return alert('当前浏览器不支持语音识别');
+    try{ isRecording ? rec.stop() : rec.start(); } catch(e){ alert('启动语音失败，请检查权限'); }
   }
 
-  // ---------- 语音合成 (8岁童声) ----------
+  // ---------- 语音合成 ----------
   const synth = window.speechSynthesis;
   let voices = [];
-  function loadVoices() { voices = synth.getVoices(); }
+  function loadVoices(){ voices = synth.getVoices(); }
   loadVoices();
-  if (synth.onvoiceschanged) synth.onvoiceschanged = loadVoices;
+  if(synth.onvoiceschanged) synth.onvoiceschanged = loadVoices;
 
-  function speak(text) {
-    if (!synth) return;
-    synth.cancel();
+  function speak(text){
+    if(!synth) return;
+    synth.cancel();  // 打断当前语音
     isSpeaking = true;
-
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
-    u.rate = 1.12;
-    u.pitch = 1.7;
-    u.volume = 1;
-
-    const v = voices.find(v =>
-      v.name.includes('XiaoYan') || v.name.includes('Yunxi') || v.name.includes('男童') || v.lang.startsWith('zh')
-    );
-    if (v) u.voice = v;
-
+    u.rate = 1.1;
+    u.pitch = 1.6;
+    const v = voices.find(x => x.lang.startsWith('zh'));
+    if(v) u.voice = v;
     u.onend = () => { isSpeaking = false; resetSilent(); };
     u.onerror = () => { isSpeaking = false; resetSilent(); };
     synth.speak(u);
   }
 
-  // ---------- 沉默主动交流 ----------
-  function clearSilent() { if (silentTimer) clearTimeout(silentTimer); }
-  function resetSilent() {
+  // ---------- 沉默问候 ----------
+  function clearSilent(){ if(silentTimer) clearTimeout(silentTimer); }
+  function resetSilent(){
     clearSilent();
-    if (isSpeaking || isReplying || isRecording) return;
+    // 输入框有内容、正在说话、正在回复时不触发
+    if(isSpeaking || isReplying || input.value.trim()) return;
     silentTimer = setTimeout(() => {
-      if (isSpeaking || isReplying || isRecording) return;
-      const autoMsgs = [
-        memory.name ? `${memory.name}，你还在吗？` : '你怎么不说话啦？',
-        '我们接着聊刚才的话题好不好？',
-        '你在干嘛呀？和我说说嘛～',
-        '我有点想你了，快来陪我聊天！',
-        '今天有没有遇到什么有趣的事？'
-      ];
-      const txt = autoMsgs[Math.floor(Math.random() * autoMsgs.length)];
-      addMsg(txt, 'ai');
-      speak(txt);
+      const s = memory.name ? `${memory.name}，在干嘛呀～` : '你在吗？陪我聊天吧～';
+      addMsg(s, 'ai');
+      speak(s);
     }, SILENT_TIMEOUT);
   }
 
-  // ---------- AI 核心 (升级版) ----------
-  function analyzeEmotion(text) {
-    if (/难过|伤心|不开心|烦|累|沮丧/.test(text)) return 'sad';
-    if (/开心|高兴|快乐|兴奋|太棒/.test(text)) return 'happy';
-    if (/生气|愤怒|讨厌/.test(text)) return 'angry';
-    return 'neutral';
-  }
-
-  function extractTopic(text) {
-    const topics = {
-      '游戏': /游戏|王者|吃鸡|原神|switch|ps5|xbox/,
-      '美食': /吃|饭|美食|火锅|烧烤|甜品|奶茶/,
-      '电影': /电影|看.*片|影院|电视剧|综艺/,
-      '音乐': /歌|音乐|听.*曲|演唱会/,
-      '运动': /跑步|健身|篮球|足球|瑜伽/,
-      '学习': /学习|作业|考试|看书/,
-    };
-    for (let [topic, regex] of Object.entries(topics)) {
-      if (regex.test(text)) return topic;
-    }
-    return memory.context.lastTopic || '日常';
-  }
-
-  // 智能回复生成器
-  function chatAI(text) {
-    const t = text.trim();
-    const lower = t.toLowerCase();
-    const emotion = analyzeEmotion(t);
-    const topic = extractTopic(t);
-
-    // 更新上下文
-    memory.context.lastTopic = topic;
-    memory.context.emotion = emotion;
-    memory.history.push({ role: 'user', content: t });
-    if (memory.history.length > 20) memory.history.shift();
-
-    // 1. 提取名字
-    if (!memory.name && /我叫|名字是|我是/.test(t)) {
-      const m = t.match(/[\u4e00-\u9fa5]{2,5}/);
-      if (m) {
-        memory.name = m[0];
-        saveMemory();
-        return `好耶！我记住你啦 ${memory.name} 😊 以后我就这样叫你～`;
-      }
-    }
-
-    // 2. 提取喜好
-    if (/我喜欢|我爱|我.*喜欢/.test(t)) {
-      const likeMatch = t.match(/喜欢[\u4e00-\u9fa5]+/);
-      if (likeMatch && !memory.context.userLikes.includes(likeMatch[0])) {
-        memory.context.userLikes.push(likeMatch[0]);
-        saveMemory();
-      }
-    }
-
-    // 3. 情绪优先回应
-    if (emotion === 'sad') {
-      return memory.name 
-        ? `抱抱 ${memory.name}～别难过，我会一直陪着你的。想和我说说发生什么了吗？` 
-        : '抱抱你～别难过，我一直都在。可以和我说说吗？';
-    }
-    if (emotion === 'happy') {
-      return '看到你开心我也超级开心！😁 是什么好事呀？我也想听～';
-    }
-
-    // 4. 基于话题的连贯回应
-    const topicResponses = {
-      '游戏': [
-        '原来你也喜欢游戏！你最近在玩什么呀？',
-        '哇，游戏世界超有趣的！你玩什么类型的？',
-        '游戏确实能放松心情呢～你最喜欢哪一款？'
-      ],
-      '美食': [
-        '说到吃的我就馋了！你喜欢什么口味呀？',
-        '我也好喜欢美食～你推荐一家好吃的店吧！',
-        '嘿嘿，你最喜欢吃什么？说不定我也喜欢呢！'
-      ],
-      '电影': [
-        '最近有什么好看的电影推荐吗？我也想看看～',
-        '我也爱看电影！你喜欢什么类型的？',
-        '电影真是个好东西，能让人体验不同人生～'
-      ]
-    };
-
-    // 5. 基础问答
-    if (/你好|嗨|哈喽|在吗/.test(lower)) {
-      return memory.name ? `哈喽 ${memory.name}！今天怎么样呀？` : '嗨～你好呀！你叫什么名字？';
-    }
-    if (/你是谁/.test(lower)) return '我是永远8岁的星网AI，最喜欢陪你聊天啦～';
-    if (/谢谢/.test(lower)) return '不客气呀～能帮到你我超幸福的！';
-    if (/晚安|睡觉/.test(lower)) return `晚安～${memory.name ? memory.name+'，' : ''}做个甜甜的梦 🌙`;
-
-    // 6. 根据话题回复，并反问
-    if (topicResponses[topic]) {
-      const replies = topicResponses[topic];
-      return replies[Math.floor(Math.random() * replies.length)];
-    }
-
-    // 7. 默认反问式回复（避免冷场）
-    const defaultReplies = [
-      '原来是这样！那接下来呢？',
-      '嗯嗯我听懂啦，你再多说一点好不好？',
-      '哇，好有意思！还有呢还有呢？',
-      '真的吗？我太好奇了，继续说～',
-      '我记住啦，你还想聊什么呀？'
-    ];
-    return defaultReplies[Math.floor(Math.random() * defaultReplies.length)];
-  }
-
-  // ---------- UI 消息显示 ----------
-  function addMsg(content, role) {
-    const div = document.createElement('div');
-    div.className = `msg ${role}`;
-    div.textContent = content;
-    msgBox.appendChild(div);
+  // ---------- UI 辅助 ----------
+  function showTyping(){
+    if(typingIndicator) return;
+    const d = document.createElement('div');
+    d.className = 'typing';
+    d.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    msgBox.appendChild(d);
+    typingIndicator = d;
     msgBox.scrollTop = msgBox.scrollHeight;
   }
 
-  // ---------- 发送逻辑 ----------
-  function go() {
+  function hideTyping(){
+    if(typingIndicator) { typingIndicator.remove(); typingIndicator = null; }
+  }
+
+  function typeMsg(elem, text, speed=34){
+    activeTyping.cancel();
+    elem.textContent = '';
+    let i=0, t;
+    const run = () => {
+      if(i<text.length){
+        elem.textContent += text[i++];
+        msgBox.scrollTop = msgBox.scrollHeight;
+        t = setTimeout(run, speed);
+      }
+    };
+    t = setTimeout(run, speed);
+    activeTyping.cancel = () => clearTimeout(t);
+  }
+
+  function addMsg(text, role){
+    hideTyping();
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    msgBox.appendChild(div);
+    msgBox.scrollTop = msgBox.scrollHeight;
+    role === 'ai' ? typeMsg(div, text) : div.textContent = text;
+  }
+
+  // ---------- 本地兜底回复（无API或出错时使用） ----------
+  function localChat(userText){
+    let reply = '';
+    if(!memory.name && /我叫|名字是/.test(userText)){
+      const m = userText.match(/[\u4e00-\u9fa5]{2,6}/);
+      if(m){ memory.name = m[0]; saveMemory(); reply = `我记住你啦，${memory.name} 😊`; }
+    }
+    if(!reply){
+      if(/难过|不开心/.test(userText)) reply = '抱抱你～我一直陪着你💛';
+      else if(/你好|嗨/.test(userText)) reply = memory.name ? `哈喽 ${memory.name}～` : '嗨！你叫什么名字呀？';
+      else if(/你是谁/.test(userText)) reply = '我是永远8岁的星网AI呀～';
+      else reply = '嗯嗯，我在听呢，继续说～';
+    }
+    return reply;
+  }
+
+  // ---------- 核心：智能回复（优先大模型，超时/失败回退本地） ----------
+  async function chatAI(userText){
+    // 1. 保存用户消息到历史
+    memory.history.push({ role: 'user', content: userText });
+    if(memory.history.length > 20) memory.history.shift();
+
+    const { endpoint, apiKey, modelName, systemPrompt } = MODEL_CONFIG;
+    let aiReply = '';
+
+    // 2. 如果没有配置API，直接使用本地逻辑
+    if(!endpoint) {
+      aiReply = localChat(userText);
+    } else {
+      try{
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': apiKey ? `Bearer ${apiKey}` : ''
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...memory.history
+            ],
+            temperature: 0.7,
+            max_tokens: 150
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if(!res.ok) throw new Error(`接口返回错误 ${res.status}`);
+        const data = await res.json();
+        aiReply = data.choices?.[0]?.message?.content || localChat(userText);
+      } catch(e) {
+        console.warn('大模型调用失败，使用本地回复:', e);
+        aiReply = localChat(userText);
+      }
+    }
+
+    // 3. 确保AI回复不为空
+    if(!aiReply) aiReply = '唔…我脑袋卡住啦，再说一次好吗？';
+
+    // 4. 将AI回复保存到历史
+    memory.history.push({ role: 'assistant', content: aiReply });
+    if(memory.history.length > 20) memory.history.shift();
+    saveMemory();
+
+    return aiReply;
+  }
+
+  // ---------- 发送消息 ----------
+  async function go(){
     const text = input.value.trim();
-    if (!text || isReplying) return;
-    
+    if(!text || isReplying) return;
+
+    // 打断正在播放的语音
+    if(isSpeaking) { synth.cancel(); isSpeaking = false; }
     clearSilent();
-    if (isRecording) rec.stop();
-    
+    if(isRecording) rec.stop();
+
     isReplying = true;
     addMsg(text, 'user');
     input.value = '';
-    
-    setTimeout(() => {
-      const reply = chatAI(text);
-      addMsg(reply, 'ai');
-      speak(reply);
-      isReplying = false;
-    }, 500);
-  }
+    showTyping();
 
-  // ---------- 自动升级 ----------
-  function autoUpgrade() {
-    if (memory.upgradeLevel >= 20) return;
-    memory.upgradeLevel++;
-    saveMemory();
-    console.log(`🌙 星网AI 进化等级: ${memory.upgradeLevel}`);
+    const reply = await chatAI(text);
+    addMsg(reply, 'ai');
+    speak(reply);
+    isReplying = false;
+    resetSilent();  // 回复完毕后重新启动沉默计时器
   }
 
   // ---------- 欢迎语 ----------
-  function welcome() {
-    const welcomeText = memory.name 
-      ? `欢迎回来 ${memory.name}！今天想聊什么呀？` 
-      : '嗨～我是星网AI，我们来聊天吧！你叫什么名字呀？';
-    addMsg(welcomeText, 'ai');
-    speak(welcomeText);
+  function welcome(){
+    const txt = memory.name ? `欢迎回来 ${memory.name} 😊` : '嗨～我是星网AI！';
+    addMsg(txt, 'ai');
+    speak(txt);
   }
 
-  // ---------- 启动 ----------
   setTimeout(() => { welcome(); loadVoices(); }, 600);
-  setTimeout(autoUpgrade, 4000);
-  setInterval(autoUpgrade, 180000);  // 每3分钟进化一次
 
-  // 事件绑定
+  // ---------- 事件绑定 ----------
   send.onclick = go;
   voiceBtn.onclick = toggleVoice;
-  input.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } };
+  input.onkeydown = e => { if(e.key === 'Enter') go(); };
+  input.addEventListener('input', resetSilent);
 
-  // 清理资源
+  // 页面关闭前清理
   window.addEventListener('beforeunload', () => {
     clearSilent();
-    if (synth.speaking) synth.cancel();
+    activeTyping.cancel();
+    if(synth.speaking) synth.cancel();
   });
+
 })();
 </script>
 </body>
