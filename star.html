@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>星网AI - 深空终端 · 进化</title>
+  <title>星网AI - 深空终端</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -147,7 +147,6 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      scroll-behavior: smooth;
     }
 
     .msg {
@@ -207,12 +206,12 @@
       50% { transform: translateY(-7px); }
     }
 
-    /* 发送框 */
+    /* 发送框：透明通透，能看见星空 */
     .input-bar {
       display: flex;
       gap: 10px;
       padding: 16px;
-      background: transparent !important;
+      background: transparent !important; /* 完全透明 */
       border-top: 1px solid rgba(90, 209, 255, 0.15);
     }
 
@@ -228,11 +227,6 @@
       transition: 0.2s;
     }
 
-    .voice-btn.active {
-      background: #2d7dff;
-      color: white;
-    }
-
     .voice-btn:hover {
       background: rgba(90, 209, 255, 0.1);
     }
@@ -242,7 +236,7 @@
       padding: 14px 18px;
       border-radius: 13px;
       border: 1px solid rgba(90, 209, 255, 0.3);
-      background: rgba(15, 26, 48, 0.35);
+      background: rgba(15, 26, 48, 0.35); /* 透明，看见背景 */
       color: #e0f7ff;
       font-size: 15px;
       outline: none;
@@ -282,7 +276,7 @@
 </head>
 <body>
 
-<!-- 启动动画 -->
+<!-- 星网启动动画 -->
 <div class="boot">
   <div class="boot-text">星网系统启动中…</div>
   <div class="boot-text">神经链路同步…</div>
@@ -298,7 +292,7 @@
     <h1>星网AI 深空终端</h1>
     <div class="status">
       <div class="status-dot"></div>
-      <span id="statusText">神经连接在线</span>
+      <span>系统已连接</span>
     </div>
   </div>
 
@@ -306,255 +300,172 @@
 
   <div class="input-bar">
     <button class="voice-btn" id="voiceBtn"><i class="fas fa-microphone"></i></button>
-    <input id="input" placeholder="输入消息... 支持 #帮助" autocomplete="off">
+    <input id="input" placeholder="输入消息...">
     <button id="send">发送</button>
   </div>
 </div>
 
 <script>
-(function(){
-  "use strict";
+// ==========================
+// 全局状态（你原版稳定逻辑）
+// ==========================
+const state = {
+  memory: { name: "", like: [], hobby: [] },
+  isThinking: false
+};
 
-  const MODEL_CONFIG = {
-    endpoint: "",
-    apiKey: "",
-    modelName: "deepseek-chat",
-    systemPrompt: "你是星网AI，一个来自深空的智慧终端。说话温柔、简短、温暖，像朋友一样。"
-  };
+// ==========================
+// 本地存储
+// ==========================
+function loadMemory() {
+  const data = localStorage.getItem("starAI_clean");
+  if (data) Object.assign(state.memory, JSON.parse(data));
+}
+function saveMemory() {
+  localStorage.setItem("starAI_clean", JSON.stringify(state.memory));
+}
 
-  const msgBox = document.getElementById('msgBox');
-  const input = document.getElementById('input');
-  const sendBtn = document.getElementById('send');
-  const voiceBtn = document.getElementById('voiceBtn');
-  const statusText = document.getElementById('statusText');
+// ==========================
+// UI 工具函数
+// ==========================
+function addMessage(text, isUser) {
+  const box = document.getElementById("msgBox");
+  const div = document.createElement("div");
+  div.className = "msg " + (isUser ? "user" : "ai");
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
 
-  let memory = { name: "", likes: [], history: [] };
-  let isThinking = false;
-  let isSpeaking = false;
-  let typingIndicator = null;
-  let typewriterTimer = null;
+function showTyping() {
+  const t = document.createElement("div");
+  t.className = "typing";
+  t.innerHTML = "<span></span><span></span><span></span>";
+  document.getElementById("msgBox").appendChild(t);
+}
 
-  const synth = window.speechSynthesis;
-  let voices = [];
-  function loadVoices() { voices = synth.getVoices(); }
-  loadVoices();
-  synth.onvoiceschanged = loadVoices;
+function hideTyping() {
+  const t = document.querySelector(".typing");
+  if (t) t.remove();
+}
 
-  // 本地存储
-  function loadMemory() {
-    try {
-      const d = localStorage.getItem('starAI_evolved');
-      if(d) Object.assign(memory, JSON.parse(d));
-    } catch(e){}
-  }
-  function saveMemory() {
-    try {
-      localStorage.setItem('starAI_evolved', JSON.stringify({
-        name: memory.name, likes: memory.likes, history: memory.history.slice(-40)
-      }));
-    } catch(e){}
-  }
-
-  // 语音
-  function speak(text) {
-    if(!synth) return;
-    synth.cancel();
-    isSpeaking = true;
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.1; u.pitch = 1.4;
-    const v = voices.find(i=>i.lang.startsWith('zh'));
-    if(v) u.voice = v;
-    u.onend = u.onerror = ()=>{ isSpeaking = false; };
-    synth.speak(u);
-  }
-
-  // UI
-  function showTyping() {
-    if(typingIndicator) return;
-    const d = document.createElement('div');
-    d.className = 'typing';
-    d.innerHTML = '<span></span><span></span><span></span>';
-    msgBox.appendChild(d);
-    typingIndicator = d;
-    msgBox.scrollTop = msgBox.scrollHeight;
-  }
-  function hideTyping() {
-    if(typingIndicator) { typingIndicator.remove(); typingIndicator = null; }
-  }
-
-  // 打字机
-  function typewriter(el, txt, sp=35, cb) {
-    let i=0;
-    el.textContent = '';
-    const t = setInterval(()=>{
-      if(i<txt.length){
-        el.textContent += txt[i++];
-        msgBox.scrollTop = msgBox.scrollHeight;
-      } else {
-        clearInterval(t);
-        cb?.();
-      }
-    }, sp);
-    return t;
-  }
-
-  // 消息
-  function addUser(text) {
-    const d = document.createElement('div');
-    d.className = 'msg user';
-    d.textContent = text;
-    msgBox.appendChild(d);
-    msgBox.scrollTop = msgBox.scrollHeight;
-    memory.history.push({role:'user',content:text});
-    saveMemory();
-  }
-  function addAI(text) {
-    hideTyping();
-    const d = document.createElement('div');
-    d.className = 'msg ai';
-    msgBox.appendChild(d);
-    typewriterTimer = typewriter(d, text, 35, ()=>{
-      speak(text);
-      memory.history.push({role:'assistant',content:text});
+// ==========================
+// 自主学习
+// ==========================
+function learn(text) {
+  if (!state.memory.name && /我叫|名字是/.test(text)) {
+    const m = text.match(/([\u4e00-\u9fa5]{2,6})/);
+    if (m) {
+      state.memory.name = m[1];
       saveMemory();
-      isThinking = false;
-      statusText.textContent = '神经连接在线';
-    });
-  }
-
-  // 本地回复
-  function localReply(t) {
-    if(t==='#清除'){ msgBox.innerHTML=''; return '✅ 对话已清空'; }
-    if(t==='#记忆'){
-      let s='【星网记忆】';
-      if(memory.name)s+=`\n身份：${memory.name}`;
-      if(memory.likes.length)s+=`\n喜好：${memory.likes.join('、')}`;
-      return s;
-    }
-    if(t==='#重置'){ localStorage.removeItem('starAI_evolved'); memory={name:"",likes:[],history:[]}; return '✅ 记忆已重置'; }
-    if(t==='#帮助') return '📡 #清除 #记忆 #重置 #模型';
-    if(t==='#模型') return MODEL_CONFIG.endpoint?`🧠 大模型：${MODEL_CONFIG.modelName}`:'🧠 星网本地智能';
-
-    if(!memory.name && /我叫|名字是/.test(t)){
-      const m = t.match(/[\u4e00-\u9fa5]{2,6}/);
-      if(m){ memory.name=m[0]; saveMemory(); return `我记住你啦，${memory.name} 😊`; }
-    }
-    if(/喜欢/.test(t)&&!/不喜欢/.test(t)){
-      const it = t.split('喜欢').pop()?.trim();
-      if(it&&it.length<12&&!memory.likes.includes(it)){ memory.likes.push(it); saveMemory(); }
-    }
-
-    if(/你记得我/.test(t)){
-      let s='我记得你';
-      if(memory.name)s+=`叫${memory.name}`;
-      if(memory.likes.length)s+=`，喜欢${memory.likes.slice(-1)}`;
-      return s+'～';
-    }
-    if(/你好|嗨/.test(t))return memory.name?`哈喽 ${memory.name} 😊`:'嗨～我是星网AI！';
-    if(/难过|不开心/.test(t))return '抱抱你，我一直都在 💛';
-    if(/谢谢/.test(t))return '不客气呀～';
-    if(/晚安/.test(t))return '晚安～做个好梦 🌙';
-
-    const arr=['原来是这样呀～','哇，好有趣！','嗯嗯我听懂啦😊','真的吗？太厉害啦！','嘿嘿我记住啦～','那接下来呢？'];
-    return arr[Math.floor(Math.random()*arr.length)];
-  }
-
-  // LLM
-  async function getAI(text) {
-    if(!MODEL_CONFIG.endpoint) return localReply(text);
-    try {
-      const ctrl = new AbortController();
-      const to = setTimeout(()=>ctrl.abort(),10000);
-      const res = await fetch(MODEL_CONFIG.endpoint,{
-        method:'POST',
-        headers:{'Content-Type':'application/json',Authorization:MODEL_CONFIG.apiKey?`Bearer ${MODEL_CONFIG.apiKey}`:''},
-        body:JSON.stringify({
-          model:MODEL_CONFIG.modelName,
-          messages:[{role:'system',content:MODEL_CONFIG.systemPrompt},...memory.history.slice(-10)],
-          temperature:0.8,max_tokens:250
-        }),
-        signal:ctrl.signal
-      });
-      clearTimeout(to);
-      if(!res.ok)throw new Error('err');
-      const d=await res.json();
-      return d.choices?.[0]?.message?.content || localReply(text);
-    } catch(e){
-      statusText.textContent = '本地智能模式';
-      return localReply(text);
     }
   }
-
-  // 发送
-  async function send() {
-    const t = input.value.trim();
-    if(!t||isThinking)return;
-    if(isSpeaking&&synth)synth.cancel();
-    isThinking = true;
-    statusText.textContent = '思考中...';
-    addUser(t);
-    input.value = '';
-    showTyping();
-    try {
-      const r = await getAI(t);
-      addAI(r);
-    } catch(e){
-      hideTyping();
-      addAI('星网信号波动，请再试一次 🌌');
+  if (/喜欢/.test(text) && !/不喜欢/.test(text)) {
+    const item = text.split("喜欢").pop()?.trim();
+    if (item && item.length < 12) {
+      state.memory.like.push(item);
+      saveMemory();
     }
   }
+}
 
-  // 语音识别
-  let rec = null;
-  let recording = false;
-  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(SR){
-    rec = new SR();
-    rec.lang='zh-CN';
-    rec.continuous=rec.interimResults=false;
-    rec.onstart=()=>{ recording=true; voiceBtn.classList.add('active'); };
-    rec.onend=()=>{ recording=false; voiceBtn.classList.remove('active'); };
-    rec.onerror=()=>{ recording=false; voiceBtn.classList.remove('active'); };
-    rec.onresult=(e)=>{ input.value=e.results[0][0].transcript; input.focus(); };
-  }
-  function toggleVoice(){
-    if(!rec){alert('不支持语音');return;}
-    try{ recording?rec.stop():rec.start(); }catch(e){}
-  }
+// ==========================
+// 智能回复
+// ==========================
+function reply(text) {
+  learn(text);
+  const n = state.memory.name;
 
-  // 欢迎
-  function welcome(){
-    const txt = memory.name?`欢迎回来，${memory.name}！✨`:'嗨～我是星网AI，输入 #帮助 查看指令～';
-    if(memory.history.length===0){
-      addAI(txt);
-    } else {
-      const last = memory.history.filter(i=>i.role==='assistant').pop();
-      if(last){
-        const d=document.createElement('div');
-        d.className='msg ai';
-        d.textContent=last.content;
-        msgBox.appendChild(d);
-      }
-      addAI(txt);
-    }
+  // 指令系统
+  if (text === "#清除") {
+    document.getElementById("msgBox").innerHTML = "";
+    return "✅ 对话已清空";
+  }
+  if (text === "#记忆") {
+    let s = "【星网记忆】";
+    if (n) s += "\n身份：" + n;
+    if (state.memory.like.length) s += "\n喜好：" + state.memory.like.join("、");
+    return s;
+  }
+  if (text === "#重置") {
+    localStorage.removeItem("starAI_clean");
+    state.memory = { name: "", like: [], hobby: [] };
+    return "✅ 记忆已重置";
   }
 
-  // 启动
-  loadMemory();
-  setTimeout(()=>{ welcome(); }, 1800);
+  if (/你记得我什么/.test(text)) {
+    let s = "我记得你";
+    if (n) s += `叫${n}`;
+    if (state.memory.like.length) s += `，喜欢${state.memory.like.at(-1)}`;
+    return s + "～";
+  }
+  if (/你好|嗨/.test(text)) return n ? `哈喽 ${n} 😊` : "嗨～我是星网AI！";
+  if (/难过|不开心/.test(text)) return "抱抱你，我一直都在 💛";
+  if (/谢谢/.test(text)) return "不客气呀～";
+  if (/晚安/.test(text)) return "晚安～做个好梦 🌙";
 
-  // 事件
-  sendBtn.onclick = send;
-  voiceBtn.onclick = toggleVoice;
-  input.onkeydown = e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } };
+  const list = [
+    "原来是这样呀～",
+    "哇，好有趣！",
+    "嗯嗯我听懂啦😊",
+    "真的吗？太厉害啦！",
+    "嘿嘿我记住啦～",
+    "那接下来呢？"
+  ];
+  return list[Math.floor(Math.random() * list.length)];
+}
 
-  // 清理
-  window.addEventListener('beforeunload',()=>{
-    if(typewriterTimer)clearInterval(typewriterTimer);
-    if(synth?.speaking)synth.cancel();
-  });
+// ==========================
+// 发送逻辑
+// ==========================
+function send() {
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if (!text || state.isThinking) return;
 
-})();
+  state.isThinking = true;
+  addMessage(text, true);
+  input.value = "";
+  showTyping();
+
+  setTimeout(() => {
+    hideTyping();
+    addMessage(reply(text), false);
+    state.isThinking = false;
+  }, 700);
+}
+
+// ==========================
+// 语音识别
+// ==========================
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "zh-CN";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  document.getElementById("voiceBtn").onclick = () => {
+    try { recognition.start(); } catch (e) {}
+  };
+  recognition.onresult = (e) => {
+    document.getElementById("input").value = e.results[0][0].transcript;
+  };
+}
+
+// ==========================
+// 事件绑定
+// ==========================
+document.getElementById("send").onclick = send;
+document.getElementById("input").onkeydown = (e) => {
+  if (e.key === "Enter") send();
+};
+
+// ==========================
+// 启动
+// ==========================
+loadMemory();
+addMessage("嗨～我是星网AI，我会记住你哦！", false);
 </script>
 </body>
 </html>
