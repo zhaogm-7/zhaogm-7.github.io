@@ -29,6 +29,26 @@ body {
   pointer-events: none;
 }
 
+/* 导航栏 */
+.nav {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  background: rgba(0,0,0,0.4);
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255,215,0,0.2);
+}
+.nav a {
+  color: #FFD700;
+  margin: 0 15px;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: bold;
+}
+.nav a:hover {
+  color: #fff;
+}
+
 header {
   position: relative;
   z-index: 1;
@@ -168,6 +188,14 @@ footer {
 
 <canvas id="particles"></canvas>
 
+<!-- 导航栏 -->
+<div class="nav">
+  <a href="index.html">首页</a>
+  <a href="safe.html">安全防御</a>
+  <a href="data.html">数据分析</a>
+  <a href="about.html">关于本站</a>
+</div>
+
 <header>
   <h1>AI 科技展示平台</h1>
   <p>智能 · 安全 · 未来 · 创新</p>
@@ -236,4 +264,54 @@ class Particle {
     }
   }
   draw() {
-    ctx.
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function init() {
+  particles = [];
+  for (let i = 0; i < 150; i++) {
+    particles.push(new Particle());
+  }
+}
+init();
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+  for (let a = 0; a < particles.length; a++) {
+    for (let b = a; b < particles.length; b++) {
+      const dx = particles[a].x - particles[b].x;
+      const dy = particles[a].y - particles[b].y;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      if (distance < 100) {
+        ctx.strokeStyle = `rgba(255, 180, 50, ${(100 - distance)/500})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(particles[a].x, particles[a].y);
+        ctx.lineTo(particles[b].x, particles[b].y);
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('mousemove', (e) => {
+  mouse.x = e.x;
+  mouse.y = e.y;
+});
+window.addEventListener('touchmove', (e) => {
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+});
+</script>
+</body>
+</html>
