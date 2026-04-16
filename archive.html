@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>档案系统</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    background: linear-gradient(135deg, #6a040f, #290000);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .container {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #ffd700;
+    border-radius: 24px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    text-align: center;
+    padding: 24px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #ffd700;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #ffd700;
+    background: rgba(255, 215, 0, 0.05);
+  }
+  .tabs {
+    display: flex;
+    background: #111;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 16px;
+    color: #999;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .tab.active {
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.12);
+    font-weight: 500;
+  }
+  .panel {
+    flex: 1;
+    padding: 24px;
+    display: none;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .panel.active {
+    display: block;
+    animation: fade 0.3s ease forwards;
+  }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .item {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .item:last-child {
+    border-bottom: none;
+  }
+  .label {
+    color: #fff;
+    font-size: 15px;
+  }
+  .value {
+    color: #ffd700;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .bottom-form {
+    padding: 16px 20px;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .input-row {
+    display: flex;
+    gap: 8px;
+  }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(20, 20, 20, 0.8);
+    color: #fff;
+    border: 1px solid #ffd700;
+    border-radius: 12px;
+    outline: none;
+    font-size: 14px;
+  }
+  button {
+    padding: 12px 16px;
+    background: #ffd700;
+    color: #222;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover {
+    background: #ffed4e;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">个人档案系统</div>
+
+  <div class="tabs">
+    <div class="tab active" data-id="t1">档案一</div>
+    <div class="tab" data-id="t2">档案二</div>
+    <div class="tab" data-id="t3">档案三</div>
+  </div>
+
+  <div class="panel active" id="t1"></div>
+  <div class="panel" id="t2"></div>
+  <div class="panel" id="t3"></div>
+
+  <!-- 保存、查询 全部放在底部 -->
+  <div class="bottom-form">
+    <div class="input-row">
+      <input id="name" placeholder="名称">
+      <input id="val" placeholder="内容/等级">
+      <button id="save">保存</button>
+    </div>
+    <div class="input-row">
+      <input id="search" placeholder="查询归档">
+      <button id="find">查询</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab')
+  const panels = document.querySelectorAll('.panel')
+  const name = document.getElementById('name')
+  const val = document.getElementById('val')
+  const search = document.getElementById('search')
+  const save = document.getElementById('save')
+  const find = document.getElementById('find')
+
+  tabs.forEach(tab => {
+    tab.onclick = () => {
+      tabs.forEach(t => t.classList.remove('active'))
+      panels.forEach(p => p.classList.remove('active'))
+      tab.classList.add('active')
+      document.getElementById(tab.dataset.id).classList.add('active')
+    }
+  })
+
+  function addItem(label, value) {
+    const html = `
+      <div class="item">
+        <div class="label">${label}</div>
+        <div class="value">${value}</div>
+      </div>`
+    document.querySelector('.panel.active').innerHTML += html
+    saveData()
+  }
+
+  save.onclick = () => {
+    if (!name.value || !val.value) return
+    addItem(name.value, val.value)
+    name.value = ''
+    val.value = ''
+  }
+
+  find.onclick = () => {
+    if (!search.value) return
+    const time = new Date().toLocaleString()
+    addItem(`查询：${search.value}`, `已归档 ${time}`)
+    search.value = ''
+  }
+
+  function saveData() {
+    const data = {}
+    panels.forEach(p => data[p.id] = p.innerHTML)
+    localStorage.setItem('archive', JSON.stringify(data))
+  }
+
+  window.onload = () => {
+    const data = JSON.parse(localStorage.getItem('archive') || '{}')
+    Object.keys(data).forEach(id => {
+      const el = document.getElementById(id)
+      if (el) el.innerHTML = data[id]
+    })
+  }
+</script>
+
+</body>
+</html>
